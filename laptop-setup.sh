@@ -4,11 +4,26 @@
 
 set -e
 
-MEMORY_REPO="https://github.com/adobetoby-maker/toby-claude-memory"
+MEMORY_REPO="adobetoby-maker/toby-claude-memory"
 KB_REPO="https://github.com/adobetoby-maker/knowledge-base"
 MEMORY_DIR="$HOME/.claude/projects/-Users-drive/memory"
 KB_DIR="$HOME/knowledge-base"
 BOOTSTRAP="$HOME/.claude/bootstrap"
+
+echo "── Checking GitHub auth ────────────────────────────"
+if ! command -v gh >/dev/null 2>&1; then
+  echo "Installing gh CLI..."
+  if command -v brew >/dev/null 2>&1; then
+    brew install gh
+  else
+    echo "❌ Install gh CLI first: https://cli.github.com"
+    exit 1
+  fi
+fi
+if ! gh auth status >/dev/null 2>&1; then
+  echo "Login to GitHub (needed for private memory repo):"
+  gh auth login
+fi
 
 echo "── Creating directories ────────────────────────────"
 mkdir -p "$HOME/.claude/projects/-Users-drive"
@@ -20,7 +35,7 @@ if [ -d "$MEMORY_DIR/.git" ]; then
   echo "Already cloned — pulling latest..."
   cd "$MEMORY_DIR" && git pull origin main --quiet
 else
-  git clone "$MEMORY_REPO" "$MEMORY_DIR"
+  gh repo clone "$MEMORY_REPO" "$MEMORY_DIR"
 fi
 
 echo "── Cloning knowledge base ──────────────────────────"
